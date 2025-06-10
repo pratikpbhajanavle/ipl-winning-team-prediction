@@ -11,4 +11,4 @@ plotly
 streamlit
 yfinance
 pandas-datareader
-prophe
+prophet
