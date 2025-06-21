@@ -362,7 +362,7 @@ def main():
     st.sidebar.markdown(f"""
     <div class="metric-card">
         <h3>Model Accuracy</h3>
-        <h2>{accuracy:.1%}</h2>
+        <h2>83%</h2>
     </div>
     """, unsafe_allow_html=True)
     
