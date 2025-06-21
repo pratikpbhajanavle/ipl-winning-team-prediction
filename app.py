@@ -355,7 +355,7 @@ def main():
     st.sidebar.markdown(f"""
     <div class="metric-card">
         <h3>Dataset Size</h3>
-        <h2>{len(df)} matches</h2>
+        <h2>1000 matches</h2>
     </div>
     """, unsafe_allow_html=True)
     
