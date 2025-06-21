@@ -519,7 +519,7 @@ def main():
             color=strengths,
             color_continuous_scale='viridis'
         )
-        fig_strength.update_xaxis(tickangle=45)
+        fig_strength.update_xaxes(tickangle=45)
         fig_strength.update_layout(height=400, showlegend=False)
         st.plotly_chart(fig_strength, use_container_width=True)
     
