@@ -51,6 +51,14 @@ st.markdown("""
         border-radius: 10px;
         margin: 0.5rem 0;
     }
+    .dataset-preview {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 0.5rem 0;
+        max-height: 400px;
+        overflow-y: auto;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -340,8 +348,17 @@ def main():
         team_data = load_team_data()
         venue_data = load_venue_data()
     
-    # Sidebar info
-    st.sidebar.header("📊 Model Information")
+    # Sidebar - Dataset Preview
+    st.sidebar.header("📊 Dataset Preview")
+    
+    # Dataset overview
+    st.sidebar.markdown(f"""
+    <div class="metric-card">
+        <h3>Dataset Size</h3>
+        <h2>{len(df)} matches</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.sidebar.markdown(f"""
     <div class="metric-card">
         <h3>Model Accuracy</h3>
@@ -349,15 +366,68 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    st.sidebar.markdown(f"""
-    <div class="metric-card">
-        <h3>Training Matches</h3>
-        <h2>{len(df)}</h2>
-    </div>
-    """, unsafe_allow_html=True)
+    # Dataset preview options
+    preview_option = st.sidebar.selectbox(
+        "📋 Select Preview",
+        ["Dataset Head", "Dataset Info", "Team Statistics", "Venue Statistics", "Column Distribution"]
+    )
     
-    st.sidebar.markdown("### 🎯 Quick & Simple Prediction")
-    st.sidebar.markdown("Just select teams, venue, and toss details. All team stats are automatically loaded!")
+    if preview_option == "Dataset Head":
+        st.sidebar.markdown("### 📄 First 10 Rows")
+        st.sidebar.markdown('<div class="dataset-preview">', unsafe_allow_html=True)
+        st.sidebar.dataframe(df.head(10), use_container_width=True)
+        st.sidebar.markdown('</div>', unsafe_allow_html=True)
+    
+    elif preview_option == "Dataset Info":
+        st.sidebar.markdown("### ℹ️ Dataset Information")
+        st.sidebar.markdown(f"""
+        **Shape:** {df.shape[0]} rows × {df.shape[1]} columns
+        
+        **Columns:**
+        """)
+        for col in df.columns[:8]:  # Show first 8 columns
+            st.sidebar.markdown(f"- {col}")
+        if len(df.columns) > 8:
+            st.sidebar.markdown(f"... and {len(df.columns) - 8} more columns")
+    
+    elif preview_option == "Team Statistics":
+        st.sidebar.markdown("### 🏏 Team Performance")
+        team_wins = df['winner'].value_counts()
+        st.sidebar.markdown('<div class="dataset-preview">', unsafe_allow_html=True)
+        for team, wins in team_wins.head(5).items():
+            win_rate = (wins / len(df)) * 100
+            st.sidebar.markdown(f"**{team}:** {wins} wins ({win_rate:.1f}%)")
+        st.sidebar.markdown('</div>', unsafe_allow_html=True)
+    
+    elif preview_option == "Venue Statistics":
+        st.sidebar.markdown("### 🏟️ Venue Distribution")
+        venue_counts = df['venue'].value_counts()
+        st.sidebar.markdown('<div class="dataset-preview">', unsafe_allow_html=True)
+        for venue, count in venue_counts.head(5).items():
+            percentage = (count / len(df)) * 100
+            st.sidebar.markdown(f"**{venue}:** {count} matches ({percentage:.1f}%)")
+        st.sidebar.markdown('</div>', unsafe_allow_html=True)
+    
+    elif preview_option == "Column Distribution":
+        st.sidebar.markdown("### 📊 Key Distributions")
+        st.sidebar.markdown(f"""
+        **Toss Decisions:**
+        - Bat First: {len(df[df['toss_decision'] == 'bat'])} ({len(df[df['toss_decision'] == 'bat'])/len(df)*100:.1f}%)
+        - Field First: {len(df[df['toss_decision'] == 'field'])} ({len(df[df['toss_decision'] == 'field'])/len(df)*100:.1f}%)
+        
+        **Average Team Strengths:**
+        - Team 1: {df['team1_strength'].mean():.3f}
+        - Team 2: {df['team2_strength'].mean():.3f}
+        """)
+    
+    # Download dataset button
+    csv = df.to_csv(index=False)
+    st.sidebar.download_button(
+        label="📥 Download Dataset",
+        data=csv,
+        file_name="ipl_training_data.csv",
+        mime="text/csv"
+    )
     
     # Main prediction interface - Simplified
     st.header("🎯 Predict Match Winner")
@@ -519,7 +589,7 @@ def main():
             color=strengths,
             color_continuous_scale='viridis'
         )
-        fig_strength.update_xaxes(tickangle=45)
+        fig_strength.update_xaxes(tickangle=45)  # FIXED: Changed from update_xaxis to update_xaxes
         fig_strength.update_layout(height=400, showlegend=False)
         st.plotly_chart(fig_strength, use_container_width=True)
     
